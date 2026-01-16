@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Mundos Roblox</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Barra lateral -->
+        <div class="sidebar">
+            <div class="logo">
+                <h1>Roblox Worlds</h1>
+            </div>
+            
+            <div class="menu">
+                <a href="#inicio" class="menu-item active">Inicio</a>
+                <a href="#mundos" class="menu-item">Mundos</a>
+                <a href="#info" class="menu-item">Info</a>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="main">
+            <!-- Inicio -->
+            <section id="inicio" class="section active">
+                <h2>Bienvenido</h2>
+                <p>Descarga mis mundos de Roblox Studio</p>
+                
+                <div class="card">
+                    <h3>Instrucciones</h3>
+                    <p>1. Ve a la sección "Mundos"</p>
+                    <p>2. Elige un mundo</p>
+                    <p>3. Haz clic en "Descargar"</p>
+                    <p>4. Abre el archivo .rbxl con Roblox Studio</p>
+                </div>
+            </section>
+
+            <!-- Mundos -->
+            <section id="mundos" class="section">
+                <h2>Mundos Disponibles</h2>
+                <p>Haz clic en un mundo para ver detalles</p>
+                
+                <div id="mundos-container" class="mundos-grid">
+                    <!-- Los mundos se cargan aquí -->
+                </div>
+            </section>
+
+            <!-- Info -->
+            <section id="info" class="section">
+                <h2>Información</h2>
+                
+                <div class="card">
+                    <h3>Requisitos</h3>
+                    <p>• Roblox Studio instalado</p>
+                    <p>• Windows o macOS</p>
+                    <p>• Espacio en disco</p>
+                </div>
+                
+                <div class="card">
+                    <h3>Uso</h3>
+                    <p>Archivo → Abrir → Seleccionar .rbxl</p>
+                    <p>Luego edita a tu gusto</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Modal para detalles -->
+    <div id="modal" class="modal">
+        <div class="modal-contenido">
+            <span id="cerrar-modal">×</span>
+            <h2 id="modal-titulo"></h2>
+            <p id="modal-descripcion"></p>
+            <div class="modal-info">
+                <p id="modal-tamano"></p>
+                <p id="modal-fecha"></p>
+            </div>
+            <a id="modal-descargar" class="btn-descargar" download>Descargar</a>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
