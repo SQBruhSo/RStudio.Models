@@ -1,43 +1,89 @@
-// Datos del archivo - CAMBIA EL TAMAÑO AL REAL
-const archivo = {
-    nombre: "CustomChatSystem.rbxl",
-    tamano: "5.7 MB", // <-- CAMBIA ESTO AL TAMAÑO REAL
-    descargas: localStorage.getItem('descargas') ? parseInt(localStorage.getItem('descargas')) : 0
-};
+// Lista de mundos - AÑADE MÁS SI TIENES
+const mundos = [
+    {
+        id: 1,
+        nombre: "Custom Chat System",
+        archivo: "CustomChatSystem.rbxl",
+        descripcion: "Sistema de chat personalizado para Roblox.",
+        tamano: "5.7 MB" // Cambia al tamaño real
+    }
+    // Puedes añadir más mundos aquí:
+    // {
+    //     id: 2,
+    //     nombre: "Otro Mundo",
+    //     archivo: "otro_mundo.rbxl",
+    //     descripcion: "Descripción del mundo.",
+    //     tamano: "10 MB"
+    // }
+];
+
+// Contador de descargas
+let descargas = localStorage.getItem('descargas') ? JSON.parse(localStorage.getItem('descargas')) : {};
 
 // Cuando cargue la página
 window.onload = function() {
-    // Mostrar datos
-    document.getElementById('tamano-real').textContent = archivo.tamano;
-    document.getElementById('contador').textContent = archivo.descargas;
+    cargarMundos();
     
     // Configurar menú
-    const items = document.querySelectorAll('.menu-item');
-    items.forEach(item => {
-        item.onclick = function(e) {
+    const links = document.querySelectorAll('.menu a');
+    links.forEach(link => {
+        link.onclick = function(e) {
             e.preventDefault();
-            items.forEach(i => i.classList.remove('active'));
+            links.forEach(l => l.classList.remove('active'));
             this.classList.add('active');
             
-            const texto = this.textContent.toLowerCase();
-            if (texto.includes('inicio')) mostrarSeccion('inicio');
-            else if (texto.includes('descargar')) mostrarSeccion('descargar');
-            else if (texto.includes('info')) mostrarSeccion('info');
+            const id = this.textContent.toLowerCase();
+            if (id.includes('inicio')) mostrarSeccion('inicio');
+            else if (id.includes('descargas')) mostrarSeccion('descargas');
+            else if (id.includes('config')) mostrarSeccion('config');
         };
     });
 };
 
 // Mostrar sección
 function mostrarSeccion(id) {
-    document.querySelectorAll('.section').forEach(s => {
-        s.classList.remove('active');
+    document.querySelectorAll('.section').forEach(sec => {
+        sec.classList.remove('active');
     });
     document.getElementById(id).classList.add('active');
 }
 
-// Contar descarga
-function contarDescarga() {
-    archivo.descargas++;
-    document.getElementById('contador').textContent = archivo.descargas;
-    localStorage.setItem('descargas', archivo.descargas);
+// Cargar y mostrar mundos
+function cargarMundos() {
+    const contenedor = document.getElementById('lista-mundos');
+    if (!contenedor) return;
+    
+    contenedor.innerHTML = '';
+    
+    mundos.forEach(mundo => {
+        const count = descargas[mundo.id] || 0;
+        
+        const div = document.createElement('div');
+        div.className = 'mundo';
+        div.innerHTML = `
+            <h3>${mundo.nombre}</h3>
+            <p>${mundo.descripcion}</p>
+            <p><strong>Tamaño:</strong> ${mundo.tamano}</p>
+            <p><strong>Descargas:</strong> ${count}</p>
+            <a href="worlds/${mundo.archivo}" class="btn" download 
+               onclick="registrarDescarga(${mundo.id})">
+                Descargar
+            </a>
+        `;
+        
+        contenedor.appendChild(div);
+    });
+}
+
+// Registrar descarga
+function registrarDescarga(id) {
+    // Incrementar contador
+    if (!descargas[id]) descargas[id] = 0;
+    descargas[id]++;
+    
+    // Guardar en localStorage
+    localStorage.setItem('descargas', JSON.stringify(descargas));
+    
+    // Actualizar vista
+    cargarMundos();
 }
