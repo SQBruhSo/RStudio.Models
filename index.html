@@ -1,276 +1,154 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Chat System - Roblox</title>
+    <title>Mundos Roblox</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-
         body {
-            background: #0f172a;
-            color: #e2e8f0;
-            min-height: 100vh;
-            display: flex;
+            font-family: Arial;
+            background: #1e1e1e;
+            color: white;
+            margin: 0;
+            padding: 20px;
         }
-
-        /* Barra lateral */
+        
         .sidebar {
-            width: 220px;
-            background: #1e293b;
-            padding: 30px 20px;
+            float: left;
+            width: 200px;
+            background: #2a2a2a;
+            padding: 20px;
             height: 100vh;
             position: fixed;
-            border-right: 1px solid #334155;
         }
-
-        .logo {
-            color: #38bdf8;
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 40px;
-            text-align: center;
-        }
-
+        
         .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            margin-top: 30px;
         }
-
-        .menu-item {
-            color: #cbd5e1;
-            text-decoration: none;
-            padding: 12px 15px;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-
-        .menu-item:hover {
-            background: #334155;
-        }
-
-        .menu-item.active {
-            background: #38bdf8;
+        
+        .menu a {
+            display: block;
             color: white;
+            text-decoration: none;
+            padding: 12px;
+            margin: 5px 0;
+            background: #333;
+            border-radius: 5px;
         }
-
-        /* Contenido */
+        
+        .menu a:hover {
+            background: #444;
+        }
+        
+        .menu a.active {
+            background: #007acc;
+        }
+        
         .content {
-            flex: 1;
-            margin-left: 220px;
-            padding: 40px;
-            max-width: 800px;
+            margin-left: 240px;
+            padding: 20px;
         }
-
+        
         .section {
             display: none;
         }
-
+        
         .section.active {
             display: block;
-            animation: fadeIn 0.3s;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Tarjeta */
-        .card {
-            background: #1e293b;
-            border-radius: 12px;
-            padding: 30px;
-            border: 1px solid #334155;
-        }
-
-        h1 {
-            color: #38bdf8;
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-
-        h2 {
-            color: #38bdf8;
-            margin-bottom: 20px;
-        }
-
-        .desc {
-            color: #94a3b8;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-
-        /* Detalles */
-        .details {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .detail-item {
-            background: #0f172a;
-            padding: 15px;
+        
+        .mundo {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 15px 0;
             border-radius: 8px;
-            border: 1px solid #334155;
-            min-width: 120px;
+            border-left: 4px solid #007acc;
         }
-
-        .detail-label {
-            color: #94a3b8;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
+        
+        .mundo h3 {
+            margin: 0 0 10px 0;
+            color: #4fc3f7;
         }
-
-        .detail-value {
-            color: #e2e8f0;
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-
-        /* Botón */
-        .download-btn {
-            background: #38bdf8;
+        
+        .btn {
+            background: #007acc;
             color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-            display: block;
-            width: 100%;
-            text-align: center;
+            padding: 10px 20px;
             text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
         }
-
-        .download-btn:hover {
-            background: #0ea5e9;
+        
+        .btn:hover {
+            background: #006bb3;
         }
-
-        /* Lista */
-        .list {
-            list-style: none;
-            margin-top: 20px;
-        }
-
-        .list li {
-            padding: 10px 0;
-            border-bottom: 1px solid #334155;
-            color: #cbd5e1;
-        }
-
-        .list li:last-child {
-            border-bottom: none;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                padding: 20px;
-            }
-
-            .content {
-                margin-left: 0;
-                padding: 20px;
-            }
-
-            .menu {
-                flex-direction: row;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-
-            .menu-item {
-                padding: 8px 12px;
-                font-size: 0.9rem;
-            }
+        
+        .info-box {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
     <!-- Barra lateral -->
     <div class="sidebar">
-        <div class="logo">Roblox Studio</div>
-        
-        <nav class="menu">
-            <a href="#" class="menu-item active" onclick="mostrarSeccion('inicio')">Inicio</a>
-            <a href="#" class="menu-item" onclick="mostrarSeccion('descargar')">Descargar</a>
-            <a href="#" class="menu-item" onclick="mostrarSeccion('info')">Info</a>
-        </nav>
+        <h2>Roblox Worlds</h2>
+        <div class="menu">
+            <a href="#" class="active" onclick="mostrarSeccion('inicio')">Inicio</a>
+            <a href="#" onclick="mostrarSeccion('descargas')">Descargas</a>
+            <a href="#" onclick="mostrarSeccion('config')">Configuración</a>
+        </div>
     </div>
 
-    <!-- Contenido principal -->
-    <main class="content">
+    <!-- Contenido -->
+    <div class="content">
         <!-- Inicio -->
-        <section id="inicio" class="section active">
-            <div class="card">
-                <h1>Custom Chat System</h1>
-                <p class="desc">Sistema de chat personalizado para Roblox. Descarga el archivo .rbxl y ábrelo con Roblox Studio.</p>
-                
-                <div class="details">
-                    <div class="detail-item">
-                        <div class="detail-label">Tamaño</div>
-                        <div class="detail-value" id="tamano-real">...</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Formato</div>
-                        <div class="detail-value">.rbxl</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Descargas</div>
-                        <div class="detail-value" id="contador">0</div>
-                    </div>
-                </div>
-
-                <button class="download-btn" onclick="mostrarSeccion('descargar')">
-                    Descargar
-                </button>
+        <div id="inicio" class="section active">
+            <h1>Bienvenido</h1>
+            <p>Descarga mundos para Roblox Studio.</p>
+            
+            <div class="info-box">
+                <h3>¿Cómo funciona?</h3>
+                <p>1. Ve a la sección "Descargas"</p>
+                <p>2. Elige un mundo</p>
+                <p>3. Descarga el archivo .rbxl</p>
+                <p>4. Ábrelo con Roblox Studio</p>
             </div>
-        </section>
+        </div>
 
-        <!-- Descargar -->
-        <section id="descargar" class="section">
-            <div class="card">
-                <h2>Descargar</h2>
-                <p class="desc">Haz clic en el botón para descargar el archivo.</p>
-                
-                <a href="worlds/CustomChatSystem.rbxl" class="download-btn" download onclick="contarDescarga()">
-                    Descargar CustomChatSystem.rbxl
-                </a>
+        <!-- Descargas -->
+        <div id="descargas" class="section">
+            <h1>Mundos Descargables</h1>
+            <p>Selecciona un mundo para descargar:</p>
+            
+            <div id="lista-mundos">
+                <!-- Los mundos se cargan aquí -->
             </div>
-        </section>
+        </div>
 
-        <!-- Info -->
-        <section id="info" class="section">
-            <div class="card">
-                <h2>Información</h2>
-                
-                <ul class="list">
-                    <li>1. Descarga el archivo .rbxl</li>
-                    <li>2. Abre Roblox Studio</li>
-                    <li>3. Ve a Archivo → Abrir</li>
-                    <li>4. Selecciona el archivo</li>
-                    <li>5. Listo para usar</li>
-                </ul>
+        <!-- Configuración -->
+        <div id="config" class="section">
+            <h1>Configuración</h1>
+            
+            <div class="info-box">
+                <h3>Requisitos</h3>
+                <p>• Roblox Studio instalado</p>
+                <p>• Windows 10/11 o macOS</p>
+                <p>• Conexión a internet</p>
             </div>
-        </section>
-    </main>
+            
+            <div class="info-box">
+                <h3>Instrucciones</h3>
+                <p>1. Descarga el archivo .rbxl</p>
+                <p>2. Abre Roblox Studio</p>
+                <p>3. Archivo → Abrir</p>
+                <p>4. Selecciona el archivo</p>
+                <p>5. ¡Listo para editar!</p>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
