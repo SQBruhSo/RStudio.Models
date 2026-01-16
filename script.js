@@ -5,9 +5,8 @@ const models = [
         name: "Custom Chat System",
         filename: "CustomChatSystem.rbxl",
         description: "Custom chat system for Roblox with advanced commands and configuration.",
-        size: null // Will be detected automatically
+        size: null
     }
-    // Add more models here if needed
 ];
 
 // ===== APP STATE =====
@@ -19,189 +18,216 @@ let settings = JSON.parse(localStorage.getItem('rsm_settings') || '{}');
 const defaultSettings = {
     theme: 'dark',
     primaryColor: '#4CAF50',
-    language: 'en',
+    fontSize: 16,
     autoSize: true
 };
 
 // ===== INITIALIZE APP =====
 function initApp() {
-    console.log('Initializing RSM App...');
+    console.log('🚀 Initializing RSM...');
     
     // Merge with default settings
     settings = { ...defaultSettings, ...settings };
     
-    // Apply saved settings
+    // Apply saved settings IMMEDIATELY
     applySettings();
     
-    // Setup all event listeners
+    // Setup event listeners
     setupEventListeners();
     
-    // Load models immediately
+    // Load models
     loadModels(true);
     
-    // Update statistics
+    // Update stats
     updateStats();
     
-    // Check URL for section
+    // Check URL
     checkUrlHash();
     
-    console.log('RSM App initialized successfully');
+    // Prevent scroll issues
+    preventScrollJump();
+    
+    console.log('✅ RSM initialized');
 }
 
 // ===== APPLY SETTINGS =====
 function applySettings() {
-    console.log('Applying settings:', settings);
+    console.log('🎨 Applying settings:', settings);
     
     // Apply theme
-    const themeToggle = document.getElementById('theme-toggle');
     if (settings.theme === 'light') {
         document.body.classList.add('light-mode');
-        if (themeToggle) themeToggle.checked = true;
+        document.getElementById('theme-toggle').checked = true;
     }
     
-    // Apply primary color
-    if (settings.primaryColor) {
-        document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
-        const colorSelect = document.getElementById('color-select');
-        if (colorSelect) colorSelect.value = settings.primaryColor;
-        updateHoverColor(settings.primaryColor);
-    }
+    // Apply primary color - FIXED for light mode
+    applyPrimaryColor(settings.primaryColor);
     
-    // Apply language
-    const languageSelect = document.getElementById('language-select');
-    if (languageSelect) {
-        languageSelect.value = settings.language;
-    }
+    // Apply font size
+    applyFontSize(settings.fontSize);
     
     // Apply auto-size
-    const autoSizeToggle = document.getElementById('auto-size');
-    if (autoSizeToggle) {
-        autoSizeToggle.checked = settings.autoSize !== false;
-    }
+    document.getElementById('auto-size').checked = settings.autoSize;
 }
 
-// ===== UPDATE HOVER COLOR =====
-function updateHoverColor(color) {
-    try {
-        const hex = color.replace('#', '');
-        if (hex.length !== 6) return;
-        
-        const r = Math.max(0, parseInt(hex.substr(0, 2), 16) - 30);
-        const g = Math.max(0, parseInt(hex.substr(2, 2), 16) - 30);
-        const b = Math.max(0, parseInt(hex.substr(4, 2), 16) - 30);
-        
-        const hoverColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-        document.documentElement.style.setProperty('--primary-hover', hoverColor);
-    } catch (error) {
-        console.warn('Error updating hover color:', error);
-    }
+// ===== APPLY PRIMARY COLOR (FIXED) =====
+function applyPrimaryColor(color) {
+    console.log('🎨 Setting primary color:', color);
+    
+    // Save color
+    settings.primaryColor = color;
+    
+    // Apply to CSS variables - WORKS IN BOTH MODES
+    document.documentElement.style.setProperty('--primary-color', color);
+    
+    // Calculate hover color
+    const hoverColor = darkenColor(color, 20);
+    document.documentElement.style.setProperty('--primary-hover', hoverColor);
+    
+    // Update select
+    document.getElementById('color-select').value = color;
+    
+    // Save settings
+    saveSettings();
+}
+
+// ===== DARKEN COLOR =====
+function darkenColor(color, percent) {
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    const newR = Math.floor(r * (100 - percent) / 100);
+    const newG = Math.floor(g * (100 - percent) / 100);
+    const newB = Math.floor(b * (100 - percent) / 100);
+    
+    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+}
+
+// ===== APPLY FONT SIZE =====
+function applyFontSize(size) {
+    console.log('🔤 Setting font size:', size);
+    
+    // Validate size
+    size = Math.max(12, Math.min(24, size));
+    settings.fontSize = size;
+    
+    // Apply to CSS variable
+    document.documentElement.style.setProperty('--font-size', `${size}px`);
+    
+    // Update display
+    document.getElementById('font-size-value').textContent = `${size}px`;
+    
+    // Save settings
+    saveSettings();
 }
 
 // ===== SETUP EVENT LISTENERS =====
 function setupEventListeners() {
-    console.log('Setting up event listeners...');
+    console.log('🔧 Setting up event listeners...');
     
-    // Navigation menu
+    // Navigation
     const menuLinks = document.querySelectorAll('.menu-link');
     menuLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Remove active from all
-            menuLinks.forEach(l => l.classList.remove('active'));
+            // Prevent scroll jump
+            const scrollY = window.scrollY;
             
-            // Add active to clicked
+            // Update active
+            menuLinks.forEach(l => l.classList.remove('active'));
             this.classList.add('active');
             
-            // Get section
-            const section = this.getAttribute('data-section');
-            console.log('Navigating to:', section);
-            
             // Show section
+            const section = this.getAttribute('data-section');
             showSection(section);
             
-            // Update URL
+            // Update URL without scrolling
             window.location.hash = section;
+            
+            // Restore scroll position
+            setTimeout(() => window.scrollTo(0, scrollY), 0);
         });
     });
     
     // Theme toggle
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('change', function() {
-            console.log('Theme toggled:', this.checked ? 'light' : 'dark');
-            if (this.checked) {
-                document.body.classList.add('light-mode');
-                settings.theme = 'light';
-            } else {
-                document.body.classList.remove('light-mode');
-                settings.theme = 'dark';
-            }
-            saveSettings();
-        });
-    }
+    document.getElementById('theme-toggle').addEventListener('change', function() {
+        if (this.checked) {
+            document.body.classList.add('light-mode');
+            settings.theme = 'light';
+        } else {
+            document.body.classList.remove('light-mode');
+            settings.theme = 'dark';
+        }
+        // Re-apply color for consistency
+        applyPrimaryColor(settings.primaryColor);
+        saveSettings();
+    });
     
     // Color select
-    const colorSelect = document.getElementById('color-select');
-    if (colorSelect) {
-        colorSelect.addEventListener('change', function() {
-            const color = this.value;
-            console.log('Color changed to:', color);
-            document.documentElement.style.setProperty('--primary-color', color);
-            updateHoverColor(color);
-            settings.primaryColor = color;
-            saveSettings();
-        });
-    }
+    document.getElementById('color-select').addEventListener('change', function() {
+        applyPrimaryColor(this.value);
+    });
     
-    // Language select
-    const languageSelect = document.getElementById('language-select');
-    if (languageSelect) {
-        languageSelect.addEventListener('change', function() {
-            settings.language = this.value;
-            console.log('Language changed to:', this.value);
-            saveSettings();
-            // Language change logic would go here
-        });
-    }
+    // Font size controls
+    document.getElementById('font-decrease').addEventListener('click', function() {
+        applyFontSize(settings.fontSize - 1);
+    });
+    
+    document.getElementById('font-increase').addEventListener('click', function() {
+        applyFontSize(settings.fontSize + 1);
+    });
     
     // Reset button
-    const resetBtn = document.getElementById('reset-btn');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', function() {
-            if (confirm('Reset all download counters?')) {
-                downloads = {};
-                localStorage.setItem('rsm_downloads', JSON.stringify(downloads));
-                loadModels();
-                updateStats();
-                alert('Download counters reset!');
-            }
-        });
-    }
+    document.getElementById('reset-btn').addEventListener('click', function() {
+        if (confirm('Reset all download counters?')) {
+            downloads = {};
+            localStorage.setItem('rsm_downloads', JSON.stringify(downloads));
+            loadModels();
+            updateStats();
+            alert('Counters reset!');
+        }
+    });
     
     // Auto-size toggle
-    const autoSizeToggle = document.getElementById('auto-size');
-    if (autoSizeToggle) {
-        autoSizeToggle.addEventListener('change', function() {
-            settings.autoSize = this.checked;
-            console.log('Auto-size:', this.checked ? 'enabled' : 'disabled');
-            saveSettings();
-            if (this.checked) {
-                loadModels(true);
-            }
-        });
-    }
+    document.getElementById('auto-size').addEventListener('change', function() {
+        settings.autoSize = this.checked;
+        saveSettings();
+        if (this.checked) {
+            loadModels(true);
+        }
+    });
     
     // Hash change listener
     window.addEventListener('hashchange', checkUrlHash);
     
-    console.log('Event listeners setup complete');
+    // Prevent scroll on hash change
+    window.addEventListener('hashchange', function() {
+        setTimeout(() => window.scrollTo(0, 0), 1);
+    });
+}
+
+// ===== PREVENT SCROLL JUMP =====
+function preventScrollJump() {
+    // Remove focus from any element that might cause scroll
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+    
+    // Ensure we start at top
+    window.scrollTo(0, 0);
+    
+    // Listen for any hash changes
+    if (window.location.hash) {
+        setTimeout(() => window.scrollTo(0, 0), 100);
+    }
 }
 
 // ===== CHECK URL HASH =====
 function checkUrlHash() {
     const hash = window.location.hash.substring(1);
-    console.log('URL hash detected:', hash);
     
     if (hash && ['home', 'models', 'configs'].includes(hash)) {
         // Update menu
@@ -212,37 +238,34 @@ function checkUrlHash() {
             }
         });
         
-        // Show section
+        // Show section without scroll
+        const scrollY = window.scrollY;
         showSection(hash);
-    } else {
-        // Default to home
-        showSection('home');
+        setTimeout(() => window.scrollTo(0, scrollY), 0);
     }
 }
 
 // ===== SHOW SECTION =====
 function showSection(section) {
-    console.log('Showing section:', section);
+    console.log('📄 Showing section:', section);
     
-    // Hide all sections
-    const sections = document.querySelectorAll('.section');
-    sections.forEach(sec => {
+    // Hide all
+    document.querySelectorAll('.section').forEach(sec => {
         sec.classList.remove('active');
     });
     
-    // Show target section
-    const targetSection = document.getElementById(section);
-    if (targetSection) {
-        targetSection.classList.add('active');
+    // Show selected
+    const target = document.getElementById(section);
+    if (target) {
+        target.classList.add('active');
         currentSection = section;
         
-        // Update page title
+        // Update title
         document.title = `RSM - ${section.charAt(0).toUpperCase() + section.slice(1)}`;
         
         // Load models if needed
         if (section === 'models') {
-            console.log('Loading models for models section...');
-            loadModels();
+            setTimeout(() => loadModels(), 10);
         }
         
         // Update stats if needed
@@ -257,221 +280,148 @@ async function loadModels(detectSize = false) {
     const container = document.getElementById('models-container');
     
     if (!container) {
-        console.error('ERROR: models-container not found!');
+        console.error('❌ No container found!');
         return;
     }
     
-    console.log('Loading models... Container found:', !!container);
-    console.log('Number of models:', models.length);
+    console.log('📦 Loading models...');
     
     // Clear container
     container.innerHTML = '';
     
-    // Show message if no models
+    // Check if we have models
     if (models.length === 0) {
         container.innerHTML = '<p style="color: var(--text-secondary); padding: 20px; text-align: center;">No models available.</p>';
-        console.log('No models to display');
         return;
     }
     
-    // Process each model
-    for (const model of models) {
-        console.log('Processing model:', model.name);
-        
-        // Detect file size if enabled
+    // Create model cards
+    for (let model of models) {
+        // Detect size if needed
         if (detectSize && settings.autoSize !== false) {
             try {
-                console.log('Detecting size for:', model.filename);
                 const size = await getFileSize(`worlds/${model.filename}`);
                 model.size = size;
-                console.log('Size detected:', size);
             } catch (error) {
                 model.size = 'Unknown';
-                console.warn('Could not detect size:', error);
             }
         }
         
-        // Create model card
-        const card = createModelCard(model);
-        if (card) {
-            container.appendChild(card);
-        }
+        // Create card
+        const card = document.createElement('div');
+        card.className = 'model-card';
+        
+        const downloadCount = downloads[model.id] || 0;
+        
+        card.innerHTML = `
+            <h3>${model.name}</h3>
+            <p>${model.description}</p>
+            <div class="model-info">
+                <span><strong>Size:</strong> ${model.size || 'Loading...'}</span>
+                <span><strong>Downloads:</strong> ${downloadCount}</span>
+                <span><strong>Format:</strong> .rbxl</span>
+            </div>
+            <a href="worlds/${model.filename}" class="download-btn" download 
+               onclick="registerDownload(${model.id}); return true;">
+                Download
+            </a>
+        `;
+        
+        container.appendChild(card);
     }
     
-    console.log('Models loaded successfully');
-}
-
-// ===== CREATE MODEL CARD =====
-function createModelCard(model) {
-    const card = document.createElement('div');
-    card.className = 'model-card';
-    
-    const downloadCount = downloads[model.id] || 0;
-    
-    card.innerHTML = `
-        <h3>${model.name}</h3>
-        <p>${model.description}</p>
-        <div class="model-info">
-            <span><strong>Size:</strong> ${model.size || 'Loading...'}</span>
-            <span><strong>Downloads:</strong> ${downloadCount}</span>
-            <span><strong>Format:</strong> .rbxl</span>
-        </div>
-        <a href="worlds/${model.filename}" class="download-btn" download 
-           onclick="RSM.registerDownload(${model.id}); return true;">
-            Download
-        </a>
-    `;
-    
-    return card;
+    console.log(`✅ Loaded ${models.length} models`);
 }
 
 // ===== GET FILE SIZE =====
 async function getFileSize(url) {
-    return new Promise((resolve) => {
-        // Try HEAD request first
-        fetch(url, { method: 'HEAD' })
-            .then(response => {
-                if (response.ok) {
-                    const size = response.headers.get('content-length');
-                    if (size) {
-                        resolve(formatSize(parseInt(size)));
-                        return;
-                    }
-                }
-                // Fallback to fetch with blob
-                return fetch(url);
-            })
-            .then(response => {
-                if (response && response.ok) {
-                    return response.blob();
-                }
-                return null;
-            })
-            .then(blob => {
-                if (blob) {
-                    resolve(formatSize(blob.size));
-                } else {
-                    resolve('Unknown');
-                }
-            })
-            .catch(error => {
-                console.warn('File size detection failed:', error);
-                resolve('Unknown');
-            });
-    });
+    try {
+        const response = await fetch(url, { method: 'HEAD' });
+        if (response.ok) {
+            const size = response.headers.get('content-length');
+            if (size) {
+                return formatSize(parseInt(size));
+            }
+        }
+        return 'Unknown';
+    } catch (error) {
+        return 'Unknown';
+    }
 }
 
 // ===== FORMAT SIZE =====
 function formatSize(bytes) {
-    if (isNaN(bytes) || bytes === 0) return '0 B';
+    if (isNaN(bytes)) return 'Unknown';
     
     const units = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    let size = bytes;
+    let unitIndex = 0;
     
-    if (i === 0) return `${bytes} ${units[i]}`;
+    while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
+        unitIndex++;
+    }
     
-    return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
+    return `${size.toFixed(1)} ${units[unitIndex]}`;
 }
 
 // ===== REGISTER DOWNLOAD =====
 function registerDownload(modelId) {
-    console.log('Registering download for model:', modelId);
+    console.log('⬇️ Downloading model:', modelId);
     
-    // Increment counter
+    // Count download
     if (!downloads[modelId]) downloads[modelId] = 0;
     downloads[modelId]++;
     
-    // Save to localStorage
+    // Save
     localStorage.setItem('rsm_downloads', JSON.stringify(downloads));
     
     // Update stats
     updateStats();
     
-    // Reload models to update counter display
+    // Update model display
     if (currentSection === 'models') {
         setTimeout(() => loadModels(), 100);
     }
-    
-    console.log(`Model ${modelId} downloaded ${downloads[modelId]} times`);
 }
 
-// ===== UPDATE STATISTICS =====
+// ===== UPDATE STATS =====
 function updateStats() {
-    console.log('Updating statistics...');
-    
     // Total models
-    const totalModelsEl = document.getElementById('total-models');
-    if (totalModelsEl) {
-        totalModelsEl.textContent = models.length;
-    }
+    document.getElementById('total-models').textContent = models.length;
     
     // Calculate total size
-    calculateTotalSize().then(totalSize => {
-        const totalSizeEl = document.getElementById('total-size');
-        if (totalSizeEl) {
-            totalSizeEl.textContent = totalSize;
-        }
-    });
-}
-
-// ===== CALCULATE TOTAL SIZE =====
-async function calculateTotalSize() {
     let totalBytes = 0;
-    let processed = 0;
-    
-    for (const model of models) {
+    models.forEach(model => {
         if (model.size && model.size !== 'Unknown') {
-            const match = model.size.match(/(\d+\.?\d*)\s*(B|KB|MB|GB)/i);
+            const match = model.size.match(/(\d+\.?\d*)\s*(B|KB|MB|GB)/);
             if (match) {
                 let bytes = parseFloat(match[1]);
-                const unit = match[2].toUpperCase();
+                const unit = match[2];
                 
-                switch(unit) {
-                    case 'GB': bytes *= 1024 * 1024 * 1024; break;
-                    case 'MB': bytes *= 1024 * 1024; break;
-                    case 'KB': bytes *= 1024; break;
-                }
+                if (unit === 'MB') bytes *= 1024 * 1024;
+                else if (unit === 'KB') bytes *= 1024;
+                else if (unit === 'GB') bytes *= 1024 * 1024 * 1024;
                 
                 totalBytes += bytes;
-                processed++;
             }
         }
-    }
+    });
     
-    console.log(`Processed ${processed} model sizes, total: ${totalBytes} bytes`);
-    return formatSize(totalBytes);
+    document.getElementById('total-size').textContent = formatSize(totalBytes);
 }
 
 // ===== SAVE SETTINGS =====
 function saveSettings() {
     localStorage.setItem('rsm_settings', JSON.stringify(settings));
-    console.log('Settings saved:', settings);
 }
 
-// ===== PUBLIC API =====
-window.RSM = {
-    initApp,
-    registerDownload,
-    loadModels,
-    updateStats,
-    showSection,
-    getFileSize,
-    formatSize
-};
+// ===== EXPORT FUNCTIONS =====
+window.registerDownload = registerDownload;
 
-// ===== INITIALIZE =====
-// Wait for DOM to be fully loaded
+// ===== START APP =====
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM fully loaded, initializing app...');
-        initApp();
-    });
+    document.addEventListener('DOMContentLoaded', initApp);
 } else {
-    console.log('DOM already loaded, initializing app...');
     initApp();
 }
-
-// Debug info
-console.log('RSM script loaded successfully');
-console.log('Models configured:', models.length);
-console.log('Current settings:', settings);
