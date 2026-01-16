@@ -14,12 +14,10 @@ let currentSection = 'home';
 let downloads = JSON.parse(localStorage.getItem('rsm_downloads') || '{}');
 let settings = JSON.parse(localStorage.getItem('rsm_settings') || '{}');
 
-// Default settings
+// Default settings (SIMPLIFICADO)
 const defaultSettings = {
     theme: 'dark',
-    primaryColor: '#4CAF50',
-    fontSize: 16,
-    autoSize: true
+    fontSize: 16
 };
 
 // ===== INITIALIZE APP =====
@@ -29,7 +27,7 @@ function initApp() {
     // Merge with default settings
     settings = { ...defaultSettings, ...settings };
     
-    // Apply saved settings IMMEDIATELY
+    // Apply saved settings
     applySettings();
     
     // Setup event listeners
@@ -41,74 +39,23 @@ function initApp() {
     // Update stats
     updateStats();
     
-    // Check URL
-    checkUrlHash();
-    
-    // Prevent scroll issues
-    preventScrollJump();
-    
     console.log('✅ RSM initialized');
 }
 
 // ===== APPLY SETTINGS =====
 function applySettings() {
-    console.log('🎨 Applying settings:', settings);
-    
     // Apply theme
     if (settings.theme === 'light') {
         document.body.classList.add('light-mode');
         document.getElementById('theme-toggle').checked = true;
     }
     
-    // Apply primary color - FIXED for light mode
-    applyPrimaryColor(settings.primaryColor);
-    
     // Apply font size
     applyFontSize(settings.fontSize);
-    
-    // Apply auto-size
-    document.getElementById('auto-size').checked = settings.autoSize;
-}
-
-// ===== APPLY PRIMARY COLOR (FIXED) =====
-function applyPrimaryColor(color) {
-    console.log('🎨 Setting primary color:', color);
-    
-    // Save color
-    settings.primaryColor = color;
-    
-    // Apply to CSS variables - WORKS IN BOTH MODES
-    document.documentElement.style.setProperty('--primary-color', color);
-    
-    // Calculate hover color
-    const hoverColor = darkenColor(color, 20);
-    document.documentElement.style.setProperty('--primary-hover', hoverColor);
-    
-    // Update select
-    document.getElementById('color-select').value = color;
-    
-    // Save settings
-    saveSettings();
-}
-
-// ===== DARKEN COLOR =====
-function darkenColor(color, percent) {
-    const hex = color.replace('#', '');
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
-    
-    const newR = Math.floor(r * (100 - percent) / 100);
-    const newG = Math.floor(g * (100 - percent) / 100);
-    const newB = Math.floor(b * (100 - percent) / 100);
-    
-    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
 }
 
 // ===== APPLY FONT SIZE =====
 function applyFontSize(size) {
-    console.log('🔤 Setting font size:', size);
-    
     // Validate size
     size = Math.max(12, Math.min(24, size));
     settings.fontSize = size;
@@ -133,9 +80,6 @@ function setupEventListeners() {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Prevent scroll jump
-            const scrollY = window.scrollY;
-            
             // Update active
             menuLinks.forEach(l => l.classList.remove('active'));
             this.classList.add('active');
@@ -143,12 +87,6 @@ function setupEventListeners() {
             // Show section
             const section = this.getAttribute('data-section');
             showSection(section);
-            
-            // Update URL without scrolling
-            window.location.hash = section;
-            
-            // Restore scroll position
-            setTimeout(() => window.scrollTo(0, scrollY), 0);
         });
     });
     
@@ -161,14 +99,7 @@ function setupEventListeners() {
             document.body.classList.remove('light-mode');
             settings.theme = 'dark';
         }
-        // Re-apply color for consistency
-        applyPrimaryColor(settings.primaryColor);
         saveSettings();
-    });
-    
-    // Color select
-    document.getElementById('color-select').addEventListener('change', function() {
-        applyPrimaryColor(this.value);
     });
     
     // Font size controls
@@ -179,82 +110,18 @@ function setupEventListeners() {
     document.getElementById('font-increase').addEventListener('click', function() {
         applyFontSize(settings.fontSize + 1);
     });
-    
-    // Reset button
-    document.getElementById('reset-btn').addEventListener('click', function() {
-        if (confirm('Reset all download counters?')) {
-            downloads = {};
-            localStorage.setItem('rsm_downloads', JSON.stringify(downloads));
-            loadModels();
-            updateStats();
-            alert('Counters reset!');
-        }
-    });
-    
-    // Auto-size toggle
-    document.getElementById('auto-size').addEventListener('change', function() {
-        settings.autoSize = this.checked;
-        saveSettings();
-        if (this.checked) {
-            loadModels(true);
-        }
-    });
-    
-    // Hash change listener
-    window.addEventListener('hashchange', checkUrlHash);
-    
-    // Prevent scroll on hash change
-    window.addEventListener('hashchange', function() {
-        setTimeout(() => window.scrollTo(0, 0), 1);
-    });
-}
-
-// ===== PREVENT SCROLL JUMP =====
-function preventScrollJump() {
-    // Remove focus from any element that might cause scroll
-    if (document.activeElement) {
-        document.activeElement.blur();
-    }
-    
-    // Ensure we start at top
-    window.scrollTo(0, 0);
-    
-    // Listen for any hash changes
-    if (window.location.hash) {
-        setTimeout(() => window.scrollTo(0, 0), 100);
-    }
-}
-
-// ===== CHECK URL HASH =====
-function checkUrlHash() {
-    const hash = window.location.hash.substring(1);
-    
-    if (hash && ['home', 'models', 'configs'].includes(hash)) {
-        // Update menu
-        document.querySelectorAll('.menu-link').forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('data-section') === hash) {
-                link.classList.add('active');
-            }
-        });
-        
-        // Show section without scroll
-        const scrollY = window.scrollY;
-        showSection(hash);
-        setTimeout(() => window.scrollTo(0, scrollY), 0);
-    }
 }
 
 // ===== SHOW SECTION =====
 function showSection(section) {
     console.log('📄 Showing section:', section);
     
-    // Hide all
+    // Hide all sections
     document.querySelectorAll('.section').forEach(sec => {
         sec.classList.remove('active');
     });
     
-    // Show selected
+    // Show selected section
     const target = document.getElementById(section);
     if (target) {
         target.classList.add('active');
@@ -276,7 +143,7 @@ function showSection(section) {
 }
 
 // ===== LOAD MODELS =====
-async function loadModels(detectSize = false) {
+async function loadModels() {
     const container = document.getElementById('models-container');
     
     if (!container) {
@@ -297,14 +164,12 @@ async function loadModels(detectSize = false) {
     
     // Create model cards
     for (let model of models) {
-        // Detect size if needed
-        if (detectSize && settings.autoSize !== false) {
-            try {
-                const size = await getFileSize(`worlds/${model.filename}`);
-                model.size = size;
-            } catch (error) {
-                model.size = 'Unknown';
-            }
+        // Detect size automatically
+        try {
+            const size = await getFileSize(`worlds/${model.filename}`);
+            model.size = size;
+        } catch (error) {
+            model.size = 'Unknown';
         }
         
         // Create card
@@ -322,7 +187,7 @@ async function loadModels(detectSize = false) {
                 <span><strong>Format:</strong> .rbxl</span>
             </div>
             <a href="worlds/${model.filename}" class="download-btn" download 
-               onclick="registerDownload(${model.id}); return true;">
+               onclick="registerDownload(${model.id});">
                 Download
             </a>
         `;
@@ -383,6 +248,9 @@ function registerDownload(modelId) {
     if (currentSection === 'models') {
         setTimeout(() => loadModels(), 100);
     }
+    
+    // Let the download proceed naturally
+    return true;
 }
 
 // ===== UPDATE STATS =====
@@ -420,8 +288,4 @@ function saveSettings() {
 window.registerDownload = registerDownload;
 
 // ===== START APP =====
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
-} else {
-    initApp();
-}
+document.addEventListener('DOMContentLoaded', initApp);
