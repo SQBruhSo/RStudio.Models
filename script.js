@@ -1,54 +1,68 @@
-// Lista de mundos - AÑADE MÁS SI TIENES
+// Lista de mundos - MODIFICA ESTO
 const mundos = [
     {
         id: 1,
         nombre: "Custom Chat System",
         archivo: "CustomChatSystem.rbxl",
-        descripcion: "Sistema de chat personalizado para Roblox.",
-        tamano: "5.7 MB" // Cambia al tamaño real
-    }
-    // Puedes añadir más mundos aquí:
-    // {
-    //     id: 2,
-    //     nombre: "Otro Mundo",
-    //     archivo: "otro_mundo.rbxl",
-    //     descripcion: "Descripción del mundo.",
-    //     tamano: "10 MB"
-    // }
+        descripcion: "Sistema de chat personalizado para Roblox con comandos y configuración avanzada.",
+        tamano: "5.7 MB" // CAMBIA AL TAMAÑO REAL
+    },
+    // Añade más mundos si quieres
 ];
 
 // Contador de descargas
 let descargas = localStorage.getItem('descargas') ? JSON.parse(localStorage.getItem('descargas')) : {};
 
-// Cuando cargue la página
-window.onload = function() {
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    // Configurar navegación
+    configurarNavegacion();
+    
+    // Cargar mundos
     cargarMundos();
     
-    // Configurar menú
+    // Mostrar estadísticas
+    actualizarEstadisticas();
+});
+
+// Configurar navegación
+function configurarNavegacion() {
     const links = document.querySelectorAll('.menu a');
+    
     links.forEach(link => {
-        link.onclick = function(e) {
+        link.addEventListener('click', function(e) {
             e.preventDefault();
+            
+            // Quitar activo de todos
             links.forEach(l => l.classList.remove('active'));
+            
+            // Marcar este como activo
             this.classList.add('active');
             
-            const id = this.textContent.toLowerCase();
-            if (id.includes('inicio')) mostrarSeccion('inicio');
-            else if (id.includes('descargas')) mostrarSeccion('descargas');
-            else if (id.includes('config')) mostrarSeccion('config');
-        };
+            // Obtener sección
+            const seccionId = this.getAttribute('href').substring(1);
+            
+            // Mostrar sección
+            mostrarSeccion(seccionId);
+        });
     });
-};
+}
 
 // Mostrar sección
 function mostrarSeccion(id) {
+    // Ocultar todas
     document.querySelectorAll('.section').forEach(sec => {
         sec.classList.remove('active');
     });
-    document.getElementById(id).classList.add('active');
+    
+    // Mostrar seleccionada
+    const seccion = document.getElementById(id);
+    if (seccion) {
+        seccion.classList.add('active');
+    }
 }
 
-// Cargar y mostrar mundos
+// Cargar mundos
 function cargarMundos() {
     const contenedor = document.getElementById('lista-mundos');
     if (!contenedor) return;
@@ -81,9 +95,26 @@ function registrarDescarga(id) {
     if (!descargas[id]) descargas[id] = 0;
     descargas[id]++;
     
-    // Guardar en localStorage
+    // Guardar
     localStorage.setItem('descargas', JSON.stringify(descargas));
     
-    // Actualizar vista
+    // Actualizar
     cargarMundos();
+    actualizarEstadisticas();
+    
+    // Mensaje
+    alert('Descarga iniciada. Abre el archivo con Roblox Studio.');
+}
+
+// Actualizar estadísticas
+function actualizarEstadisticas() {
+    // Total mundos
+    document.getElementById('total-mundos').textContent = mundos.length;
+    
+    // Total descargas
+    let total = 0;
+    for (let id in descargas) {
+        total += descargas[id];
+    }
+    document.getElementById('total-descargas').textContent = total;
 }
