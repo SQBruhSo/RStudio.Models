@@ -4,7 +4,7 @@ const models = [
         id: 1,
         name: "Custom Chat System",
         filename: "CustomChatSystem.rbxl",
-        description: "	This chat system is fully customizable and designed to integrate easily into your projects. Make sure to follow the rules provided to avoid errors or conflicts within the system.",
+        description: "This chat system is fully customizable and designed to integrate easily into your projects. Make sure to follow the rules provided to avoid errors or conflicts within the system.",
         size: null
     }
 ];
