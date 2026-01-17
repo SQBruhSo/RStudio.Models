@@ -387,31 +387,6 @@
             border-color: var(--text-color);
         }
 
-        input[type="color"] {
-            width: 50px;
-            height: 40px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-
-        input[type="color"]::-webkit-color-swatch-wrapper {
-            padding: 0;
-        }
-
-        input[type="color"]::-webkit-color-swatch {
-            border: 2px solid var(--border-color);
-            border-radius: 4px;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -446,14 +421,6 @@
             
             .model-info span {
                 font-size: calc(var(--font-size) * 0.85);
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .action-btn {
-                width: 100%;
             }
         }
 
@@ -649,26 +616,7 @@
                             <div class="color-option" data-color="#F44336" style="background: #F44336;"></div>
                             <div class="color-option" data-color="#607D8B" style="background: #607D8B;"></div>
                         </div>
-                        <div style="margin-top: 15px;">
-                            <label for="customColor">Custom Color:</label>
-                            <input type="color" id="customColor" value="#4CAF50">
-                        </div>
                     </div>
-                </div>
-                
-                <div class="info-card">
-                    <h3>Data Management</h3>
-                    <div class="action-buttons">
-                        <button id="resetStats" class="download-btn" style="background: #ff9800;">
-                            Reset Download Stats
-                        </button>
-                        <button id="resetConfig" class="download-btn" style="background: #f44336;">
-                            Reset All Settings
-                        </button>
-                    </div>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 15px;">
-                        Note: Settings are saved automatically in your browser.
-                    </p>
                 </div>
                 
                 <!-- Easter Egg Section (hidden by default) -->
@@ -696,7 +644,6 @@
                 name: "Custom Chat System",
                 filename: "CustomChatSystem.rbxl",
                 description: "This chat system is fully customizable and designed to integrate easily into your projects. Make sure to follow the rules provided to avoid errors or conflicts within the system.",
-                size: "1.2 MB",
                 category: "Game Systems",
                 addedDate: "2023-12-15"
             }
@@ -729,6 +676,17 @@
                 root.style.setProperty('--text-color', '#ffffff');
                 root.style.setProperty('--text-secondary', '#b0b0b0');
                 root.style.setProperty('--border-color', '#404040');
+                
+                // Invertir iconos en modo oscuro
+                document.querySelectorAll('.menu-icon').forEach(icon => {
+                    icon.style.filter = 'brightness(0) invert(1)';
+                });
+                
+                // Invertir iconos de características
+                document.querySelectorAll('.feature-icon').forEach(icon => {
+                    icon.style.filter = 'brightness(0) invert(1)';
+                });
+                
             } else {
                 // Modo claro (valores por defecto)
                 root.style.setProperty('--bg-color', '#f5f5f5');
@@ -737,6 +695,19 @@
                 root.style.setProperty('--text-color', '#333333');
                 root.style.setProperty('--text-secondary', '#666666');
                 root.style.setProperty('--border-color', '#d6d6d6');
+                
+                // Restaurar iconos a su estado normal
+                document.querySelectorAll('.menu-icon').forEach(icon => {
+                    // Solo quitar filtro si no está activo
+                    if (!icon.closest('.menu-item.active') && !icon.closest('.menu-item:hover')) {
+                        icon.style.filter = 'none';
+                    }
+                });
+                
+                // Restaurar iconos de características
+                document.querySelectorAll('.feature-icon').forEach(icon => {
+                    icon.style.filter = 'none';
+                });
             }
             
             // Actualizar color primario
@@ -807,12 +778,24 @@
             // Update active menu
             document.querySelectorAll('.menu-item').forEach(item => {
                 item.classList.remove('active');
+                const icon = item.querySelector('.menu-icon');
+                if (icon) {
+                    if (config.darkMode) {
+                        icon.style.filter = 'brightness(0) invert(1)';
+                    } else {
+                        icon.style.filter = 'none';
+                    }
+                }
             });
             
             // Find and activate the corresponding menu item
             const menuItem = document.querySelector(`.menu-item[data-section="${sectionId}"]`);
             if (menuItem) {
                 menuItem.classList.add('active');
+                const icon = menuItem.querySelector('.menu-icon');
+                if (icon) {
+                    icon.style.filter = 'brightness(0) invert(1)';
+                }
             }
             
             // Update title
@@ -885,6 +868,15 @@
                     config.darkMode = this.checked;
                     saveConfig();
                     updateTheme();
+                    
+                    // Aplicar filtro a iconos activos después del cambio
+                    const activeMenuItem = document.querySelector('.menu-item.active');
+                    if (activeMenuItem) {
+                        const activeIcon = activeMenuItem.querySelector('.menu-icon');
+                        if (activeIcon) {
+                            activeIcon.style.filter = 'brightness(0) invert(1)';
+                        }
+                    }
                 });
             }
             
@@ -898,48 +890,6 @@
                     updateSettingsUI();
                 });
             });
-            
-            // Configurar selector de color personalizado
-            const customColor = document.getElementById('customColor');
-            if (customColor) {
-                customColor.value = config.primaryColor;
-                customColor.addEventListener('input', function() {
-                    config.primaryColor = this.value;
-                    saveConfig();
-                    updateTheme();
-                    updateSettingsUI();
-                });
-            }
-            
-            // Configurar botón de reset de estadísticas
-            const resetStatsBtn = document.getElementById('resetStats');
-            if (resetStatsBtn) {
-                resetStatsBtn.addEventListener('click', function() {
-                    if (confirm('Are you sure you want to reset all download statistics? This cannot be undone.')) {
-                        downloads = {};
-                        localStorage.removeItem('rsm_downloads');
-                        updateStats();
-                        if (currentSection === 'models') {
-                            loadModels();
-                        }
-                        alert('Download statistics have been reset.');
-                    }
-                });
-            }
-            
-            // Configurar botón de reset de configuración
-            const resetConfigBtn = document.getElementById('resetConfig');
-            if (resetConfigBtn) {
-                resetConfigBtn.addEventListener('click', function() {
-                    if (confirm('Are you sure you want to reset all settings to default? This cannot be undone.')) {
-                        config = {...defaultConfig};
-                        saveConfig();
-                        updateTheme();
-                        updateSettingsUI();
-                        alert('Settings have been reset to default.');
-                    }
-                });
-            }
             
             // Configurar botón para ocultar easter egg
             const hideEasterEggBtn = document.getElementById('hideEasterEgg');
@@ -956,12 +906,6 @@
             const darkModeToggle = document.getElementById('darkModeToggle');
             if (darkModeToggle) {
                 darkModeToggle.checked = config.darkMode;
-            }
-            
-            // Actualizar selector de color
-            const customColor = document.getElementById('customColor');
-            if (customColor) {
-                customColor.value = config.primaryColor;
             }
             
             // Actualizar opciones de color activas
@@ -1021,9 +965,9 @@
                     <p>${model.description}</p>
                     <div class="model-info">
                         <span><strong>Category:</strong> ${model.category}</span>
-                        <span><strong>Size:</strong> ${model.size}</span>
                         <span><strong>Downloads:</strong> ${downloadCount}</span>
                         <span><strong>Format:</strong> .rbxl</span>
+                        <span><strong>Added:</strong> ${model.addedDate}</span>
                     </div>
                     <a href="worlds/${model.filename}" class="download-btn" download 
                        onclick="registerDownload(${model.id}); return true;">
