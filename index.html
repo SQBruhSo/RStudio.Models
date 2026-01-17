@@ -283,15 +283,15 @@
     <div class="sidebar">
         <h2>Roblox Studio Models</h2>
         <nav class="menu">
-            <a href="#" class="menu-item active" onclick="showSection('home');">
+            <a href="#" class="menu-item active" data-section="home">
                 <img src="https://cdn-icons-png.freepik.com/512/9046/9046107.png" class="menu-icon" alt="Home">
                 <span class="menu-text">Home</span>
             </a>
-            <a href="#" class="menu-item" onclick="showSection('models');">
+            <a href="#" class="menu-item" data-section="models">
                 <img src="https://cdn-icons-png.freepik.com/512/9046/9046107.png" class="menu-icon" alt="Models">
                 <span class="menu-text">Models</span>
             </a>
-            <a href="#" class="menu-item" onclick="showSection('links');">
+            <a href="#" class="menu-item" data-section="links">
                 <img src="https://cdn-icons-png.freepik.com/512/9046/9046107.png" class="menu-icon" alt="Links">
                 <span class="menu-text">Links</span>
             </a>
@@ -373,10 +373,14 @@
         // ===== APP STATE =====
         let currentSection = 'home';
         let downloads = JSON.parse(localStorage.getItem('rsm_downloads') || '{}');
+        let modelsLoaded = false; // Bandera para evitar carga duplicada
 
         // ===== FUNCIÓN PARA MOSTRAR SECCIÓN =====
         function showSection(sectionId) {
             console.log('Mostrando sección:', sectionId);
+            
+            // Actualizar sección actual
+            currentSection = sectionId;
             
             // Ocultar todas las secciones
             document.querySelectorAll('.section').forEach(section => {
@@ -395,28 +399,21 @@
             });
             
             // Encontrar y activar el elemento del menú correspondiente
-            const menuItems = document.querySelectorAll('.menu-item');
-            menuItems.forEach(item => {
-                if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(sectionId)) {
-                    item.classList.add('active');
-                }
-            });
+            document.querySelector(`.menu-item[data-section="${sectionId}"]`).classList.add('active');
             
             // Actualizar título
             document.title = `RSM - ${sectionId.charAt(0).toUpperCase() + sectionId.slice(1)}`;
             
-            // Cargar modelos si es necesario
-            if (sectionId === 'models') {
+            // Cargar modelos si es necesario (solo una vez)
+            if (sectionId === 'models' && !modelsLoaded) {
                 loadModels();
+                modelsLoaded = true;
             }
             
             // Actualizar estadísticas si es necesario
             if (sectionId === 'home') {
                 updateStats();
             }
-            
-            // Prevenir comportamiento por defecto del enlace
-            return false;
         }
 
         // ===== INICIALIZAR APP =====
@@ -425,11 +422,6 @@
             
             // Configurar eventos de navegación
             setupNavigation();
-            
-            // Cargar modelos si estamos en la sección de modelos
-            if (document.getElementById('models').classList.contains('active')) {
-                loadModels();
-            }
             
             // Actualizar estadísticas
             updateStats();
@@ -443,14 +435,10 @@
             const menuItems = document.querySelectorAll('.menu-item');
             menuItems.forEach(item => {
                 item.addEventListener('click', function(e) {
-                    // Obtener el ID de la sección del atributo onclick
-                    const onclickAttr = this.getAttribute('onclick');
-                    if (onclickAttr) {
-                        const match = onclickAttr.match(/showSection\('([^']+)'\)/);
-                        if (match && match[1]) {
-                            showSection(match[1]);
-                            e.preventDefault();
-                        }
+                    e.preventDefault();
+                    const sectionId = this.getAttribute('data-section');
+                    if (sectionId) {
+                        showSection(sectionId);
                     }
                 });
             });
@@ -483,6 +471,7 @@
                     const size = await getFileSize(`worlds/${model.filename}`);
                     model.size = size;
                 } catch (error) {
+                    console.log('Error obteniendo tamaño:', error);
                     model.size = 'Desconocido';
                 }
                 
@@ -501,7 +490,7 @@
                         <span><strong>Formato:</strong> .rbxl</span>
                     </div>
                     <a href="worlds/${model.filename}" class="download-btn" download 
-                       onclick="registerDownload(${model.id});">
+                       onclick="registerDownload(${model.id}); return true;">
                         Descargar
                     </a>
                 `;
@@ -524,6 +513,7 @@
                 }
                 return 'Desconocido';
             } catch (error) {
+                console.error('Error obteniendo tamaño del archivo:', error);
                 return 'Desconocido';
             }
         }
@@ -558,9 +548,11 @@
             // Actualizar estadísticas
             updateStats();
             
-            // Actualizar visualización de modelos
+            // Recargar modelos para actualizar contador
             if (currentSection === 'models') {
-                setTimeout(() => loadModels(), 100);
+                setTimeout(() => {
+                    loadModels();
+                }, 100);
             }
             
             return true;
@@ -569,7 +561,10 @@
         // ===== ACTUALIZAR ESTADÍSTICAS =====
         function updateStats() {
             // Total de modelos
-            document.getElementById('total-models').textContent = models.length;
+            const totalModelsElement = document.getElementById('total-models');
+            if (totalModelsElement) {
+                totalModelsElement.textContent = models.length;
+            }
         }
 
         // ===== INICIAR APP CUANDO EL DOM ESTÉ LISTO =====
