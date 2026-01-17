@@ -20,7 +20,7 @@ const defaultSettings = {
     fontSize: 16
 };
 
-// ===== SHOW SECTION (GLOBAL FUNCTION) =====
+// ===== GLOBAL FUNCTIONS =====
 function showSection(section) {
     console.log('📄 Showing section:', section);
     
@@ -30,7 +30,10 @@ function showSection(section) {
     });
     
     // Mark active link
-    document.querySelector(`.menu-link[onclick*="${section}"]`).classList.add('active');
+    const activeLink = document.querySelector(`.menu-link[onclick*="${section}"]`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
     
     // Hide all sections
     document.querySelectorAll('.section').forEach(sec => {
@@ -50,20 +53,32 @@ function showSection(section) {
         if (section === 'models') {
             loadModels();
         }
-        
-        // Update stats if needed
-        if (section === 'home') {
-            updateStats();
-        }
     }
     
-    return false; // Prevent default behavior
+    return false;
 }
 
-// ===== CHANGE FONT SIZE (GLOBAL FUNCTION) =====
 function changeFontSize(change) {
     const newSize = settings.fontSize + change;
     applyFontSize(newSize);
+}
+
+function registerDownload(modelId) {
+    console.log('⬇️ Downloading model:', modelId);
+    
+    // Count download
+    if (!downloads[modelId]) downloads[modelId] = 0;
+    downloads[modelId]++;
+    
+    // Save
+    localStorage.setItem('rsm_downloads', JSON.stringify(downloads));
+    
+    // Update model display
+    if (currentSection === 'models') {
+        setTimeout(() => loadModels(), 100);
+    }
+    
+    return true;
 }
 
 // ===== INITIALIZE APP =====
@@ -81,9 +96,6 @@ function initApp() {
     
     // Load models
     loadModels();
-    
-    // Update stats
-    updateStats();
     
     console.log('✅ RSM initialized');
 }
@@ -181,7 +193,7 @@ async function loadModels() {
                 <span><strong>Format:</strong> .rbxl</span>
             </div>
             <a href="worlds/${model.filename}" class="download-btn" download 
-               onclick="registerDownload(${model.id});">
+               onclick="registerDownload(${model.id}); return true;">
                 Download
             </a>
         `;
@@ -222,60 +234,6 @@ function formatSize(bytes) {
     }
     
     return `${size.toFixed(1)} ${units[unitIndex]}`;
-}
-
-// ===== REGISTER DOWNLOAD =====
-function registerDownload(modelId) {
-    console.log('⬇️ Downloading model:', modelId);
-    
-    // Count download
-    if (!downloads[modelId]) downloads[modelId] = 0;
-    downloads[modelId]++;
-    
-    // Save
-    localStorage.setItem('rsm_downloads', JSON.stringify(downloads));
-    
-    // Update stats
-    updateStats();
-    
-    // Update model display
-    if (currentSection === 'models') {
-        setTimeout(() => loadModels(), 100);
-    }
-    
-    return true;
-}
-
-// ===== UPDATE STATS =====
-function updateStats() {
-    // Total models
-    const totalModelsEl = document.getElementById('total-models');
-    if (totalModelsEl) {
-        totalModelsEl.textContent = models.length;
-    }
-    
-    // Calculate total size
-    let totalBytes = 0;
-    models.forEach(model => {
-        if (model.size && model.size !== 'Unknown') {
-            const match = model.size.match(/(\d+\.?\d*)\s*(B|KB|MB|GB)/);
-            if (match) {
-                let bytes = parseFloat(match[1]);
-                const unit = match[2];
-                
-                if (unit === 'MB') bytes *= 1024 * 1024;
-                else if (unit === 'KB') bytes *= 1024;
-                else if (unit === 'GB') bytes *= 1024 * 1024 * 1024;
-                
-                totalBytes += bytes;
-            }
-        }
-    });
-    
-    const totalSizeEl = document.getElementById('total-size');
-    if (totalSizeEl) {
-        totalSizeEl.textContent = formatSize(totalBytes);
-    }
 }
 
 // ===== SAVE SETTINGS =====
