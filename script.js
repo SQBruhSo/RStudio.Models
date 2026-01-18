@@ -165,9 +165,6 @@ function initApp() {
     // Setup settings
     setupSettings();
     
-    // Setup easter egg
-    setupEasterEgg();
-    
     // Update statistics
     updateStats();
     
@@ -224,14 +221,6 @@ function setupSettings() {
             updateSettingsUI();
         });
     });
-    
-    // Configurar botón para ocultar easter egg
-    const hideEasterEggBtn = document.getElementById('hideEasterEgg');
-    if (hideEasterEggBtn) {
-        hideEasterEggBtn.addEventListener('click', function() {
-            document.getElementById('easterEggCard').style.display = 'none';
-        });
-    }
 }
 
 // ===== ACTUALIZAR UI DE SETTINGS =====
@@ -253,12 +242,6 @@ function updateSettingsUI() {
             option.style.borderColor = 'transparent';
         }
     });
-    
-    // Mostrar/ocultar easter egg
-    const easterEggCard = document.getElementById('easterEggCard');
-    if (easterEggCard) {
-        easterEggCard.style.display = config.easterEggUnlocked ? 'block' : 'none';
-    }
 }
 
 // ===== GUARDAR CONFIGURACIÓN =====
@@ -308,73 +291,6 @@ function loadModels() {
     });
     
     console.log(`✅ Loaded ${models.length} models`);
-}
-
-// ===== UPDATE STATISTICS =====
-function updateStats() {
-    // Total models
-    const totalModelsElement = document.getElementById('total-models');
-    if (totalModelsElement) {
-        totalModelsElement.textContent = models.length;
-    }
-    
-    // Total downloads (siempre 0)
-    const totalDownloadsElement = document.getElementById('total-downloads');
-    if (totalDownloadsElement) {
-        totalDownloadsElement.textContent = '0';
-    }
-    
-    // Top model (siempre None)
-    const topModelElement = document.getElementById('top-model');
-    if (topModelElement) {
-        topModelElement.textContent = 'None';
-    }
-    
-    // Last update (fecha actual)
-    const lastUpdateElement = document.getElementById('last-update');
-    if (lastUpdateElement) {
-        const now = new Date();
-        const options = { month: 'short', day: 'numeric' };
-        lastUpdateElement.textContent = now.toLocaleDateString('en-US', options);
-    }
-}
-
-// ===== SETUP EASTER EGG =====
-function setupEasterEgg() {
-    const secretElement = document.querySelector('.sidebar h2');
-    
-    if (!secretElement) return;
-    
-    secretElement.style.cursor = 'pointer';
-    secretElement.title = "Click me...";
-    
-    secretElement.addEventListener('click', function() {
-        config.clickCount = (config.clickCount || 0) + 1;
-        
-        // Efecto visual
-        this.style.transform = 'scale(1.1)';
-        this.style.transition = 'transform 0.2s';
-        
-        setTimeout(() => {
-            this.style.transform = 'scale(1)';
-        }, 200);
-        
-        // Comprobar si se ha desbloqueado el easter egg
-        if (config.clickCount === 7 && !config.easterEggUnlocked) {
-            config.easterEggUnlocked = true;
-            saveConfig();
-            
-            // Mostrar mensaje especial
-            alert('🎉 Congratulations! You found the secret easter egg! 🎉\n\nCheck the Settings section for something special!');
-            
-            // Si estamos en settings, actualizar
-            if (currentSection === 'settings') {
-                updateSettingsUI();
-            }
-        }
-        
-        saveConfig();
-    });
 }
 
 // ===== START APP WHEN DOM IS READY =====
